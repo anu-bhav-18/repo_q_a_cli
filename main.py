@@ -46,7 +46,7 @@ def clone_repo(url:str,name:str)->None:
         Repo.clone_from(url=url,to_path=name)
         console.print(f"[green] Successfully Cloned Repository.[/green]")
 
-    except Expectations as e:
+    except Exception as e:
         console.print(f"[red] Error while cloning repo:{e}[/red]")
 
 #clone_repo(repo_url,file_path)
@@ -62,7 +62,7 @@ def load_documents(path:str):
         documents = loader.load()
         console.print(f"[yellow] Files Loaded:-{len(documents)}.[/yellow]")
         return documents
-    except Expectations as e:
+    except Exception as e:
         console.print(f"[red] Error while loading files:-{e}[/red]")
 
 file_documents = load_documents(path= file_path + "/examples")
@@ -79,7 +79,7 @@ def convert_in_chunks(docs):
         code_chunks = code_text_splitter.split_documents(docs)
         console.print(f"[yellow] Total Code chunks:-{len(code_chunks)}[/yellow]")
         return  code_chunks
-    except Expectations as e:
+    except Exception as e:
         console.print(f"Error while converting in chunks:-{e}")
 
 total_code_chunks = convert_in_chunks(file_documents)
@@ -108,7 +108,7 @@ chroma = convert_in_embedding(total_code_chunks,"./chroma_db")
 
 llm = pipeline("text-generation")
 
-def ask(chroma_db,model):
+def ask(chroma_db,model,query):
     try:
         try:
             retriever = chroma.as_retriever()
@@ -116,7 +116,11 @@ def ask(chroma_db,model):
                 llm=model,
             chain_type="stuff",
             retriever = retriever)
-            return  agent
+            console.print(f"Agent Created Successfully.")
+            response = agent.run({"query":query})
+            console.print(f"[yellow] Agent Response... [/yellow]")
+            console.print(f"{response}")
+            return  response
 
         except Exception as e:
             console.print(f"Error while retrieving :-{e}")
@@ -125,12 +129,11 @@ def ask(chroma_db,model):
     except Exception as e:
         console.print(f"Error :-{e}")
 
-agent_a = ask(chroma,llm)
-console.print(f"Agent Created Successfully.")
 
-response = agent_a.run({"query":"code of decision tree"})
-console.print(f"[yellow] Agent Response... [/yellow]")
-console.print(f"{response}")
+ask(chroma,llm,"code of decision tree")
+
+
+
 
 
 
